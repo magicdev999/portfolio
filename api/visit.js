@@ -1,27 +1,82 @@
 import { sendToDiscord } from "./discord.js";
 
-function getClientIp(req, context) {
-    // Netlify Functions provide IP via context
-    if (context?.clientContext?.sourceIp) {
-        return context.clientContext.sourceIp;
+function getHeaderValue(req, headerName) {
+    if (!req || !req.headers) {
+        return undefined;
     }
 
-    // Fallback to headers for other platforms
-    const headerCandidates = [
-        req.headers["x-nf-client-connection-ip"],
-        req.headers["cf-connecting-ip"],
-        req.headers["x-forwarded-for"],
-        req.headers["x-real-ip"],
-        req.headers["client-ip"],
+    if (typeof req.headers.get === "function") {
+        const direct = req.headers.get(headerName);
+        if (direct) {
+            return direct;
+        }
+
+        const lower = headerName.toLowerCase();
+        const lowerValue = req.headers.get(lower);
+        if (lowerValue) {
+            return lowerValue;
+        }
+    }
+
+    const candidates = [headerName, headerName.toLowerCase(), headerName.toUpperCase()];
+    for (const key of candidates) {
+        const value = req.headers[key];
+        if (typeof value === "string") {
+            return value;
+        }
+    }
+
+    return undefined;
+}
+
+function getClientIp(req, context) {
+    const directCandidates = [
+        context?.ip,
+        context?.clientContext?.sourceIp,
+        context?.clientContext?.ip,
+        context?.request?.ip,
+        context?.request?.headers?.["x-forwarded-for"],
+        context?.ipAddress,
+        context?.geo?.ip,
     ];
 
-    for (const value of headerCandidates) {
+    for (const value of directCandidates) {
+        if (typeof value === "string" && value.trim()) {
+            return value.trim();
+        }
+    }
+
+    const headerCandidates = [
+        "x-nf-client-connection-ip",
+        "cf-connecting-ip",
+        "x-forwarded-for",
+        "x-real-ip",
+        "client-ip",
+        "x-client-ip",
+        "true-client-ip",
+    ];
+
+    for (const headerName of headerCandidates) {
+        const value = getHeaderValue(req, headerName);
         if (typeof value === "string") {
             const ip = value.split(",")[0].trim();
             if (ip) {
                 return ip;
             }
         }
+    }
+
+    return "unknown";
+}
+
+function getUserAgent(req, body) {
+    if (body?.userAgent) {
+        return body.userAgent;
+    }
+
+    const value = getHeaderValue(req, "user-agent");
+    if (typeof value === "string" && value.trim()) {
+        return value.trim();
     }
 
     return "unknown";
@@ -97,7 +152,7 @@ export default async (req, context) => {
 
         const ip = getClientIp(req, context);
         const timestamp = new Date().toISOString();
-        const userAgent = body.userAgent || req.headers["user-agent"] || "unknown";
+        const userAgent = getUserAgent(req, body);
         const pathField = body.path || pathValue || req.url;
 
         // Optional debug: include raw header candidates and context when DEBUG_VISIT=true
