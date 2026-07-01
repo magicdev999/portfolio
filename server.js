@@ -1,13 +1,12 @@
 const http = require("http");
-const https = require("https");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { URL } = require("url");
+const { sendToDiscord } = require("./api/discord");
 
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || "0.0.0.0";
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1521512418675654696/gZFOV9bgnRR05-pqL1CeVI_T082BwKgUkXxrsE96Ym4nPfoKUKdojXeQiQi939G3VHY8";
 const BUILD_DIR = path.join(__dirname, "build");
 
 function getClientIp(req) {
@@ -40,6 +39,32 @@ function getLocalAddresses() {
 function sendJson(res, statusCode, payload) {
     res.writeHead(statusCode, { "Content-Type": "application/json" });
     res.end(JSON.stringify(payload));
+}
+
+function parseBody(body) {
+    if (!body) {
+        return {};
+    }
+
+    const trimmed = body.trim();
+    if (!trimmed) {
+        return {};
+    }
+
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+        try {
+            return JSON.parse(trimmed);
+        } catch (error) {
+            return {};
+        }
+    }
+
+    try {
+        const params = new URLSearchParams(trimmed);
+        return Object.fromEntries(params.entries());
+    } catch (error) {
+        return {};
+    }
 }
 
 function getContentType(filePath) {
@@ -107,59 +132,6 @@ function serveStatic(res, requestPath) {
         : serveSpa(res);
 }
 
-async function sendToDiscord(payload) {
-    const body = JSON.stringify(payload);
-    if (typeof fetch === "function") {
-        try {
-            const response = await fetch(DISCORD_WEBHOOK_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body,
-            });
-
-            if (!response.ok) {
-                console.error("Discord webhook failed", await response.text());
-            }
-            return;
-        } catch (error) {
-            console.error("Discord webhook error (fetch)", error);
-        }
-    }
-
-    return new Promise((resolve, reject) => {
-        const webhookUrl = new URL(DISCORD_WEBHOOK_URL);
-        const requestOptions = {
-            hostname: webhookUrl.hostname,
-            path: `${webhookUrl.pathname}${webhookUrl.search}`,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Content-Length": Buffer.byteLength(body),
-            },
-        };
-
-        const webhookReq = https.request(requestOptions, (res) => {
-            let data = "";
-            res.on("data", (chunk) => {
-                data += chunk;
-            });
-            res.on("end", () => {
-                if (res.statusCode >= 200 && res.statusCode < 300) {
-                    resolve();
-                } else {
-                    reject(new Error(`Discord webhook failed ${res.statusCode}: ${data}`));
-                }
-            });
-        });
-
-        webhookReq.on("error", reject);
-        webhookReq.write(body);
-        webhookReq.end();
-    }).catch((error) => {
-        console.error("Discord webhook error (https)", error);
-    });
-}
-
 const server = http.createServer(async (req, res) => {
     const requestUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
 
@@ -181,7 +153,7 @@ const server = http.createServer(async (req, res) => {
 
         req.on("end", async () => {
             try {
-                const parsed = body ? JSON.parse(body) : {};
+                const parsed = parseBody(body);
                 const ip = getClientIp(req);
                 const timestamp = new Date().toISOString();
 

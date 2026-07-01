@@ -1,4 +1,4 @@
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/1521512418675654696/gZFOV9bgnRR05-pqL1CeVI_T082BwKgUkXxrsE96Ym4nPfoKUKdojXeQiQi939G3VHY8";
+const { sendToDiscord } = require("./discord");
 
 function getClientIp(req) {
     const headerCandidates = [
@@ -21,17 +21,33 @@ function getClientIp(req) {
     return req.socket?.remoteAddress || req.connection?.remoteAddress || "unknown";
 }
 
-async function sendToDiscord(payload) {
-    const body = JSON.stringify(payload);
-    const response = await fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body,
-    });
+function parseBody(body) {
+    if (!body) {
+        return {};
+    }
 
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Discord webhook failed: ${response.status} ${text}`);
+    if (typeof body === "object") {
+        return body;
+    }
+
+    const trimmed = String(body).trim();
+    if (!trimmed) {
+        return {};
+    }
+
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+        try {
+            return JSON.parse(trimmed);
+        } catch (error) {
+            return {};
+        }
+    }
+
+    try {
+        const params = new URLSearchParams(trimmed);
+        return Object.fromEntries(params.entries());
+    } catch (error) {
+        return {};
     }
 }
 
@@ -42,7 +58,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+        const body = parseBody(req.body);
         const ip = getClientIp(req);
         const timestamp = new Date().toISOString();
 
