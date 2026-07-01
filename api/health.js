@@ -1,8 +1,13 @@
-module.exports = (req, res) => {
+export default (req) => {
     if (req.method !== "GET") {
-        res.status(405).json({ ok: false, error: "Method not allowed" });
-        return;
+        return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
+            status: 405,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
-    res.status(200).json({ ok: true });
+    return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+    });
 };

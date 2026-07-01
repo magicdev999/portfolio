@@ -1,6 +1,12 @@
 import { sendToDiscord } from "./discord.js";
 
-function getClientIp(req) {
+function getClientIp(req, context) {
+    // Netlify Functions provide IP via context
+    if (context?.clientContext?.sourceIp) {
+        return context.clientContext.sourceIp;
+    }
+
+    // Fallback to headers for other platforms
     const headerCandidates = [
         req.headers["x-nf-client-connection-ip"],
         req.headers["cf-connecting-ip"],
@@ -18,7 +24,7 @@ function getClientIp(req) {
         }
     }
 
-    return req.socket?.remoteAddress || req.connection?.remoteAddress || "unknown";
+    return "unknown";
 }
 
 function parseBody(body) {
@@ -51,15 +57,17 @@ function parseBody(body) {
     }
 }
 
-export default async (req, res) => {
+export default async (req, context) => {
     if (req.method !== "POST") {
-        res.status(405).json({ ok: false, error: "Method not allowed" });
-        return;
+        return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
+            status: 405,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 
     try {
         const body = parseBody(req.body);
-        const ip = getClientIp(req);
+        const ip = getClientIp(req, context);
         const timestamp = new Date().toISOString();
 
         await sendToDiscord({
@@ -78,9 +86,15 @@ export default async (req, res) => {
             ],
         });
 
-        res.status(200).json({ ok: true });
+        return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ ok: false, error: error.message });
+        return new Response(JSON.stringify({ ok: false, error: error.message }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 };
