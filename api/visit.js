@@ -1,4 +1,4 @@
-const { sendToDiscord } = require("./discord");
+import { sendToDiscord } from "./discord.js";
 
 function getClientIp(req) {
     const headerCandidates = [
@@ -51,7 +51,7 @@ function parseBody(body) {
     }
 }
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     if (req.method !== "POST") {
         res.status(405).json({ ok: false, error: "Method not allowed" });
         return;

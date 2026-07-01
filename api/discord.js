@@ -1,5 +1,5 @@
-const https = require("https");
-const { URL } = require("url");
+import https from "https";
+import { URL } from "url";
 
 function getWebhookUrl(webhookUrl) {
     const resolvedWebhookUrl = webhookUrl || process.env.DISCORD_WEBHOOK_URL || process.env.WEBHOOK_URL;
@@ -72,6 +72,4 @@ async function sendToDiscord(payload, webhookUrl) {
     });
 }
 
-module.exports = {
-    sendToDiscord,
-};
+export { sendToDiscord };
