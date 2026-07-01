@@ -82,6 +82,66 @@ function getUserAgent(req, body) {
     return "unknown";
 }
 
+function getDiscordUserId(req, body) {
+    const candidates = [
+        body?.discordUserId,
+        body?.userId,
+        body?.discord_id,
+        body?.discord_user_id,
+        body?.discordUserID,
+    ];
+
+    for (const value of candidates) {
+        if (typeof value === "string" && value.trim()) {
+            return value.trim();
+        }
+    }
+
+    const headerCandidates = ["x-discord-user-id", "discord-user-id", "x-user-id"];
+    for (const headerName of headerCandidates) {
+        const value = getHeaderValue(req, headerName);
+        if (typeof value === "string" && value.trim()) {
+            return value.trim();
+        }
+    }
+
+    return undefined;
+}
+
+async function getGeoDetails(ip, context) {
+    const geo = context?.geo;
+    const country = geo?.country?.name || geo?.country?.code || "unknown";
+    const city = geo?.city || "unknown";
+    const timezone = geo?.timezone || "unknown";
+
+    if (!ip || ip === "unknown") {
+        return { country, city, timezone, vpnStatus: "unknown" };
+    }
+
+    try {
+        const response = await fetch(`https://ipinfo.io/${encodeURIComponent(ip)}/json`);
+        if (!response.ok) {
+            return { country, city, timezone, vpnStatus: "unknown" };
+        }
+
+        const data = await response.json();
+        const vpnStatus = data?.privacy?.vpn === true
+            ? "likely VPN"
+            : data?.privacy?.proxy === true || data?.privacy?.relay === true || data?.privacy?.tor === true
+                ? "likely proxy/TOR"
+                : "likely not VPN";
+
+        return {
+            country: data?.country || country,
+            city: data?.city || city,
+            timezone: data?.timezone || timezone,
+            vpnStatus,
+        };
+    } catch (error) {
+        return { country, city, timezone, vpnStatus: "unknown" };
+    }
+}
+
 function parseBody(body) {
     if (!body) {
         return {};
@@ -153,49 +213,27 @@ export default async (req, context) => {
         const ip = getClientIp(req, context);
         const timestamp = new Date().toISOString();
         const userAgent = getUserAgent(req, body);
-        const pathField = body.path || pathValue || req.url;
+        const discordUserId = getDiscordUserId(req, body);
+        const geo = await getGeoDetails(ip, context);
 
-        // Optional debug: include raw header candidates and context when DEBUG_VISIT=true
-        const debugEnabled = String(process.env.DEBUG_VISIT || "").toLowerCase() === "true";
-        let debugFields = [];
-        if (debugEnabled) {
-            const headerCandidates = {
-                "x-nf-client-connection-ip": req.headers["x-nf-client-connection-ip"],
-                "cf-connecting-ip": req.headers["cf-connecting-ip"],
-                "x-forwarded-for": req.headers["x-forwarded-for"],
-                "x-real-ip": req.headers["x-real-ip"],
-                "client-ip": req.headers["client-ip"],
-                "via": req.headers["via"],
-                "host": req.headers["host"],
-            };
+        const fields = [
+            { name: "IP", value: ip || "unknown" },
+            { name: "Country", value: geo.country || "unknown" },
+            { name: "City", value: geo.city || "unknown" },
+            { name: "Timezone", value: geo.timezone || "unknown" },
+            { name: "User Agent", value: String(userAgent) },
+            { name: "Visited At", value: timestamp },
+            { name: "VPN", value: geo.vpnStatus || "unknown" },
+        ];
 
-            try {
-                const headerDebug = Object.entries(headerCandidates)
-                    .map(([k, v]) => `${k}: ${v || "(none)"}`)
-                    .join("\n");
-
-                debugFields.push({ name: "Raw IP headers", value: headerDebug.substring(0, 1024) });
-            } catch (e) {
-                // ignore
-            }
-
-            try {
-                const ctx = context ? JSON.stringify(context).substring(0, 1024) : "(none)";
-                debugFields.push({ name: "Context", value: ctx });
-            } catch (e) {
-                // ignore
-            }
+        if (discordUserId) {
+            fields.push({ name: "Discord User ID", value: discordUserId });
         }
 
         const embed = {
             title: "Visitor detected",
             color: 5814783,
-            fields: [
-                { name: "IP", value: ip || "unknown" },
-                { name: "Path", value: String(pathField) },
-                { name: "User Agent", value: String(userAgent) },
-                { name: "Time", value: timestamp },
-            ].concat(debugFields),
+            fields,
         };
 
         await sendToDiscord({ content: "New portfolio visit", embeds: [embed] });
