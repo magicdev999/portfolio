@@ -277,7 +277,7 @@ export const skills = [
 export const experiences = [
   {
     id: 0,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/neurobit.jpeg?alt=media&token=1cacbb7b-e5ea-4efb-9b3d-f5a31b9564ad",
+    img: "https://cdn-icons-png.flaticon.com/128/4651/4651706.png",
     role: "Frontend Engineer Intern",
     company: "Neurobit",
     date: "June 2023 - Nov 2023",
@@ -295,7 +295,7 @@ export const experiences = [
   },
   {
     id: 1,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/flipr.jpeg?alt=media&token=1d72532a-45eb-4c1a-a81a-c9bed9fec543",
+    img: "https://cdn-icons-png.flaticon.com/512/17408/17408078.png",
     role: "DevOps & Fullstack Engineering Intern",
     company: "Flipr Inovations Pvt. Ltd.",
     date: "Aug 2023 - Oct 2023",
@@ -316,7 +316,7 @@ export const experiences = [
   },
   {
     id: 2,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/Rudraksha.jpeg?alt=media&token=8f83f41e-d0a1-486f-9c7f-dd4cd1d09e8d",
+    img: "https://cdn-icons-png.flaticon.com/512/6243/6243404.png",
     role: "Android Developer Intern",
     company: "Rudraksha Welffare Foundation",
     date: "June 2021 - Oct 2021",
@@ -335,7 +335,7 @@ export const experiences = [
   },
   {
     id: 3,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/flipr.jpeg?alt=media&token=1d72532a-45eb-4c1a-a81a-c9bed9fec543",
+    img: "https://cdn-icons-png.flaticon.com/512/18158/18158424.png",
     role: "Fullstack Externship",
     company: "Flipr",
     date: "June 2023 - July 2023",
@@ -356,7 +356,7 @@ export const experiences = [
   },
   {
     id: 4,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/gdsc.jpeg?alt=media&token=c162329c-efaa-4be8-a173-8d3f4c48ea70",
+    img: "https://cdn-icons-png.flaticon.com/512/14063/14063155.png",
     role: "Android Developer",
     company: "DSC KIIT",
     date: "Nov2021 - Present",
@@ -371,7 +371,7 @@ export const experiences = [
   },
   {
     id: 5,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/girlScript.jpeg?alt=media&token=e656a621-cf3c-4230-bf0f-e74b4cec6035",
+    img: "https://cdn-icons-png.flaticon.com/512/2667/2667343.png",
     role: "Open Source Contributor ",
     company: "GirlScript Summer of Code",
     date: "May 2023 - Present",
@@ -382,7 +382,7 @@ export const experiences = [
 export const education = [
   {
     id: 0,
-    img: "https://firebasestorage.googleapis.com/v0/b/flexi-coding.appspot.com/o/Kiit.jpeg?alt=media&token=3839d520-c59d-4341-ad8f-0980c98de4dd",
+    img: "https://cdn-icons-png.flaticon.com/512/14934/14934704.png",
     school: "Bandung Institute of Technology",
     date: "Aug 2021 - Jul 2025",
     grade: "3.72 / 4.00 GPA",
