@@ -280,7 +280,7 @@ export const experiences = [
     img: "https://cdn-icons-png.flaticon.com/128/4651/4651706.png",
     role: "Frontend Engineer Intern",
     company: "Neurobit",
-    date: "June 2023 - Nov 2023",
+    date: "Jan 2026 - June 2026",
     desc: "Enhanced user experiences on Neurobit PSG & Hybrid, Portals by resolving bugs & reduced load time by 40%. Built Neurobit Analytics portal using React Js with seamless interaction of REST APIs using AXIOS optimized with React Query. Refactored previous code to TypeScript, updated with new dependency and integrated Vite with Jest for Unit Testing.",
     skills: [
       "ReactJS",
@@ -298,7 +298,7 @@ export const experiences = [
     img: "https://cdn-icons-png.flaticon.com/512/17408/17408078.png",
     role: "DevOps & Fullstack Engineering Intern",
     company: "Flipr Inovations Pvt. Ltd.",
-    date: "Aug 2023 - Oct 2023",
+    date: "Jan 2025 - Nov 2025",
     desc: "Built Flipr Connect Platforms using React Js integrated GraphQL with AXIOS, created High level Design and Figma design. Built Backend with GraphQL and Node JS and connected with MongoDb - Reducing API calls by 20%. Dockerized and automated with Kubernetes & Jenkins CI/CD deployed in AWS-EC2 added Prometheus & Grafana for monitoring.",
     skills: [
       "Docker",
@@ -319,7 +319,7 @@ export const experiences = [
     img: "https://cdn-icons-png.flaticon.com/512/6243/6243404.png",
     role: "Android Developer Intern",
     company: "Rudraksha Welffare Foundation",
-    date: "June 2021 - Oct 2021",
+    date: "Feb 2024 - Oct 2024",
     desc: "• Built RudraShakti - Astrologer App, with MVVM Architecture using Java and Android Studio integrating Firebase SDK. Created One to One video call integration with Socket.IO and Firebase cloud functions and integrated with Retrofit. Created Low Level Design and converted Figma design to XML code.",
     skills: [
       "Android",
@@ -338,7 +338,7 @@ export const experiences = [
     img: "https://cdn-icons-png.flaticon.com/512/18158/18158424.png",
     role: "Fullstack Externship",
     company: "Flipr",
-    date: "June 2023 - July 2023",
+    date: "Mar 2022 - Dec 2023",
     desc: "Built an employee management full stack web app used Docker and deployed on AWS ec2. I was the top performer in the program.",
     skills: [
       "ReactJS",
